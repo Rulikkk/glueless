@@ -33,7 +33,7 @@ jobs:
         with:
           cosign-release: 'v2.2.4'
 
-      - name: Set up QEMU
+      - name: Set up QEMU # this allows building arm64
         uses: docker/setup-qemu-action@v3
         with:
             platforms: linux/arm64
