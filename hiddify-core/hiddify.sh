@@ -49,9 +49,9 @@ setup_log_pipes() {
 }
 
 get_server_ip() {
-    if [ -f "/hiddify/proxy-config.json" ]; then
+    if [ -f "/config/proxy-config.json" ]; then
         # Extract server address from VLESS outbound configuration
-        local server_addr=$(grep -A 20 -B 1 '"type": "vless"' /hiddify/proxy-config.json | grep '"server"' | head -1 | cut -d'"' -f4)
+        local server_addr=$(grep -A 20 -B 1 '"type": "vless"' /config/proxy-config.json | grep '"server"' | head -1 | cut -d'"' -f4)
 
         # Check if it's an IP address or domain
         if echo "$server_addr" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -88,15 +88,15 @@ cleanup() {
 trap cleanup TERM INT
 
 # Setup logging pipes
-log_message "Setting up logging infrastructure..."
-setup_log_pipes
+# log_message "Setting up logging infrastructure..."
+# setup_log_pipes
 
 # Start HiddifyCli
 log_message "Starting HiddifyCli..."
-if [ -f "/hiddify/hiddify-config.json" ]; then
-    /hiddify/HiddifyCli run --config /hiddify/proxy-config.json -d /hiddify/hiddify-config.json > "$HIDDIFY_PIPE" 2>&1 &
+if [ -f "/config/hiddify-config.json" ]; then
+    /hiddify/HiddifyCli run --config /config/proxy-config.json -d /config/hiddify-config.json &
 else
-    /hiddify/HiddifyCli run --config /hiddify/proxy-config.json > "$HIDDIFY_PIPE" 2>&1 &
+    /hiddify/HiddifyCli run --config /config/proxy-config.json &
 fi
 HIDDIFY_PID=$!
 
@@ -110,9 +110,11 @@ for i in $(seq 1 10); do
     sleep 1
 done
 
+netstat -ln
+
 # Start RedSocks
 log_message "Starting RedSocks..."
-redsocks -c /hiddify/redsocks.conf > "$REDSOCKS_PIPE" 2>&1 &
+redsocks -c /config/redsocks.conf &
 REDSOCKS_PID=$!
 
 # Iptables rules
@@ -151,20 +153,20 @@ iptables -t nat -A OUTPUT -p tcp -j REDSOCKS
 log_message "GlueLESS is running!"
 
 # Monitor processes
-while kill -0 $HIDDIFY_PID 2>/dev/null; do
-    sleep 30
-    if ! kill -0 $REDSOCKS_PID 2>/dev/null; then
-        log_message "[ERROR] RedSocks process died unexpectedly"
-        break
-    fi
-    if ! kill -0 $HIDDIFY_LOGGER_PID 2>/dev/null; then
-        log_message "[WARNING] HiddifyCli logger died, restarting..."
-        setup_log_pipes
-    fi
-    if ! kill -0 $REDSOCKS_LOGGER_PID 2>/dev/null; then
-        log_message "[WARNING] RedSocks logger died, restarting..."
-        setup_log_pipes
-    fi
-done
+# while kill -0 $HIDDIFY_PID 2>/dev/null; do
+#     sleep 30
+#     if ! kill -0 $REDSOCKS_PID 2>/dev/null; then
+#         log_message "[ERROR] RedSocks process died unexpectedly"
+#         break
+#     fi
+#     if ! kill -0 $HIDDIFY_LOGGER_PID 2>/dev/null; then
+#         log_message "[WARNING] HiddifyCli logger died, restarting..."
+#         setup_log_pipes
+#     fi
+#     if ! kill -0 $REDSOCKS_LOGGER_PID 2>/dev/null; then
+#         log_message "[WARNING] RedSocks logger died, restarting..."
+#         setup_log_pipes
+#     fi
+# done
 
 wait $HIDDIFY_PID
