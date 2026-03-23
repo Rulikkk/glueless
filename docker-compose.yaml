@@ -1,16 +1,14 @@
 services:
   glueless:
     container_name: glueless
-    image: ghcr.io/f-normies/glueless:latest
+    image: ghcr.io/rulikkk/glueless:latest
     cap_add:
       - NET_ADMIN
     volumes:
-      - ./hiddify-config.json:/hiddify/hiddify-config.json
-      - ./proxy-config.json:/hiddify/proxy-config.json
-      - ./logs:/hiddify/logs
-    ports:
-      - "12334:12334"  # Mixed proxy port
-      - "12335:12335"  # TProxy port
-      - "16756:16756"  # Clash API port
-      - "16450:16450"  # DNS port
+      - ./config:/config
+    # ports: # you don't really need to expose ports if using with docker
+    #   - "12334:12334"  # Mixed proxy port
+    #   - "12335:12335"  # TProxy port
+    #   - "16756:16756"  # Clash API port
+    #   - "16450:16450"  # DNS port
     restart: unless-stopped

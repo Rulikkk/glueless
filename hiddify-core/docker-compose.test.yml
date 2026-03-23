@@ -1,13 +1,11 @@
 services:
   glueless:
     container_name: glueless
-    image: ghcr.io/f-normies/glueless:latest
+    image: my_glueless
     cap_add:
       - NET_ADMIN
     volumes:
-      - ./hiddify-config.json:/hiddify/hiddify-config.json
-      - ./proxy-config.json:/hiddify/proxy-config.json
-      - ./logs:/hiddify/logs
+      - ./config:/config
     # For accessing services you can forward your ports:
     # ports:
     #   - "9696:9696"
@@ -16,7 +14,6 @@ services:
   test-client:
     container_name: test-client
     image: alpine:latest
-    network_mode: "service:glueless"
     depends_on:
       glueless:
         condition: service_healthy
@@ -30,5 +27,3 @@ services:
         echo 'Location:' && 
         curl -s --max-time 20 ipinfo.io/json | grep -E 'country|city|region'
       "
-    profiles:
-      - test

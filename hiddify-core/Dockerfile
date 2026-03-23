@@ -17,7 +17,7 @@ RUN echo "architecture: $(apk --print-arch)" && \
         echo "Downloading https://github.com/hiddify/hiddify-core/releases/download/${VERSION}/hiddify-cli-linux-$ARCH.tar.gz" && \
         curl -L -o hiddify-cli.tar.gz https://github.com/hiddify/hiddify-core/releases/download/${VERSION}/hiddify-cli-linux-$ARCH.tar.gz && \
         tar -xzf hiddify-cli.tar.gz && rm hiddify-cli.tar.gz
-COPY hiddify.sh healthcheck.sh redsocks.conf .
+COPY hiddify.sh healthcheck.sh .
 RUN chmod +x *.sh
 
 EXPOSE 12334
@@ -25,7 +25,7 @@ EXPOSE 12335
 EXPOSE 16756
 EXPOSE 16450
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD /hiddify/healthcheck.sh
 
 CMD ["/hiddify/hiddify.sh"]
